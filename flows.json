@@ -1,0 +1,437 @@
+[
+    {
+        "id": "a37e7f4.f67c73",
+        "type": "ui_button",
+        "z": "6b5bd3bf.04efec",
+        "name": "",
+        "group": "25b7786a.b7fa98",
+        "order": 1,
+        "width": 10,
+        "height": 1,
+        "passthru": false,
+        "label": "開始/重置遊戲",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "#eb8c34",
+        "className": "",
+        "icon": "replay",
+        "payload": "reset",
+        "payloadType": "str",
+        "topic": "",
+        "topicType": "str",
+        "x": 400,
+        "y": 240,
+        "wires": [
+            [
+                "dc1e62dc.69cd5"
+            ]
+        ]
+    },
+    {
+        "id": "7bc261f3.3a4fb",
+        "type": "ui_text",
+        "z": "6b5bd3bf.04efec",
+        "group": "9c6532e9.8e11f",
+        "order": 2,
+        "width": 17,
+        "height": 1,
+        "name": "",
+        "label": "當前股價",
+        "format": "<span style=\"font-size:20px; font-weight:bold; color:#1E90FF\">$ {{msg.payload.price}}</span>",
+        "layout": "row-spread",
+        "x": 1020,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "ffba5c8f.21bb4",
+        "type": "ui_text",
+        "z": "6b5bd3bf.04efec",
+        "group": "25b7786a.b7fa98",
+        "order": 2,
+        "width": 10,
+        "height": 1,
+        "name": "",
+        "label": "可用現金",
+        "format": "<span style=\"font-size:16px; color:green\">$ {{msg.payload.cash}}</span>",
+        "layout": "row-spread",
+        "x": 1020,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "47a689df.60eb98",
+        "type": "ui_text",
+        "z": "6b5bd3bf.04efec",
+        "group": "25b7786a.b7fa98",
+        "order": 3,
+        "width": 10,
+        "height": 1,
+        "name": "",
+        "label": "持有股數",
+        "format": "<span style=\"color:#FF8C00\">{{msg.payload.shares}} 股</span>",
+        "layout": "row-spread",
+        "x": 1020,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "35af7c6.82b7a34",
+        "type": "ui_text",
+        "z": "6b5bd3bf.04efec",
+        "group": "25b7786a.b7fa98",
+        "order": 4,
+        "width": 10,
+        "height": 1,
+        "name": "",
+        "label": "總資產價值",
+        "format": "<span style=\"color:purple\">$ {{msg.payload.portfolio}}</span>",
+        "layout": "row-spread",
+        "x": 1030,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "db7d65c5.33a0d8",
+        "type": "ui_text",
+        "z": "6b5bd3bf.04efec",
+        "group": "25b7786a.b7fa98",
+        "order": 5,
+        "width": 5,
+        "height": 2,
+        "name": "",
+        "label": "總收益率",
+        "format": "<span style=\"{{msg.payload.profitColor}}\">{{msg.payload.profit}}</span>",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": "",
+        "color": "#000000",
+        "x": 1020,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "b27c0a25.3df738",
+        "type": "ui_text",
+        "z": "6b5bd3bf.04efec",
+        "group": "25b7786a.b7fa98",
+        "order": 6,
+        "width": 5,
+        "height": 2,
+        "name": "",
+        "label": "最佳收益率",
+        "format": "<span style=\"color:#9932CC\">{{msg.payload.bestProfit}}</span>",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": "",
+        "color": "#000000",
+        "x": 1030,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "65d82a23.2f2914",
+        "type": "ui_text",
+        "z": "6b5bd3bf.04efec",
+        "group": "9c6532e9.8e11f",
+        "order": 3,
+        "width": 17,
+        "height": 1,
+        "name": "",
+        "label": "市場新聞",
+        "format": "<span style=\"font-style:italic; color:{{msg.payload.newsColor}}\">{{msg.payload.news}}</span>",
+        "layout": "row-spread",
+        "x": 1020,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "dc1e62dc.69cd5",
+        "type": "function",
+        "z": "6b5bd3bf.04efec",
+        "name": "初始化遊戲",
+        "func": "let timer = context.get('marketTimer') || null;\nif (timer) {\n    clearInterval(timer);\n    context.set('marketTimer', null);\n}\n\nconst initialCash = 10000;\nconst initialPrice = 100;\n\nflow.set('cash', initialCash);\nflow.set('shares', 0);\nflow.set('currentPrice', initialPrice);\nflow.set('portfolioValue', initialCash);\nflow.set('profitPercent', 0);\n\nlet bestProfit = flow.get('bestProfitPercent') || 0;\nflow.set('bestProfitPercent', bestProfit);\nflow.set('initialInvestment', initialCash);\n\nlet msg1 = {\n    payload: {\n        price: initialPrice.toFixed(2),\n        cash: initialCash.toFixed(2),\n        shares: 0,\n        portfolio: initialCash.toFixed(2),\n        profit: \"0.00%\",\n        profitColor: \"color:blue\",\n        bestProfit: bestProfit.toFixed(2) + \"%\",\n        news: \"市場已開盤！開始交易吧！\",\n        newsColor: \"#90EE90\"\n    }\n};\n\nlet now = Date.now();\nlet chartData = [];\n\nfor (let i = 0; i < 10; i++) {\n    chartData.push({x: now - (9-i)*1000, y: initialPrice});\n}\n\nflow.set('priceHistory', chartData);\n\nlet msg2 = {\n    payload: [{\n        series: [\"股價\"],\n        data: [chartData],\n        labels: [\"\"]\n    }]\n};\n\ntimer = setInterval(function() {\n    node.send([null, null, {payload: \"update\"}]);\n}, 2000);\n\ncontext.set('marketTimer', timer);\n\nreturn [msg1, msg2, null];",
+        "outputs": 3,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "let timer = context.get('marketTimer');\nif (timer) {\n    clearInterval(timer);\n    context.set('marketTimer', null);\n}",
+        "libs": [],
+        "x": 590,
+        "y": 240,
+        "wires": [
+            [
+                "7bc261f3.3a4fb",
+                "65d82a23.2f2914",
+                "ffba5c8f.21bb4",
+                "47a689df.60eb98",
+                "35af7c6.82b7a34",
+                "db7d65c5.33a0d8",
+                "b27c0a25.3df738"
+            ],
+            [
+                "7d75d889.43ac78"
+            ],
+            [
+                "26f7bd1b.d31952"
+            ]
+        ]
+    },
+    {
+        "id": "62dc59c2.7e7d38",
+        "type": "ui_button",
+        "z": "6b5bd3bf.04efec",
+        "name": "",
+        "group": "25b7786a.b7fa98",
+        "order": 7,
+        "width": 5,
+        "height": 2,
+        "passthru": false,
+        "label": "買入 10 股",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "#4CAF50",
+        "className": "",
+        "icon": "add_shopping_cart",
+        "payload": "buy",
+        "payloadType": "str",
+        "topic": "10",
+        "topicType": "str",
+        "x": 380,
+        "y": 500,
+        "wires": [
+            [
+                "8f17f6f2.71aec8"
+            ]
+        ]
+    },
+    {
+        "id": "fcf16e5e.ba801",
+        "type": "ui_button",
+        "z": "6b5bd3bf.04efec",
+        "name": "",
+        "group": "25b7786a.b7fa98",
+        "order": 8,
+        "width": 5,
+        "height": 2,
+        "passthru": false,
+        "label": "賣出 10 股",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "#F44336",
+        "icon": "remove_shopping_cart",
+        "payload": "sell",
+        "payloadType": "str",
+        "topic": "10",
+        "x": 380,
+        "y": 540,
+        "wires": [
+            [
+                "8f17f6f2.71aec8"
+            ]
+        ]
+    },
+    {
+        "id": "8f17f6f2.71aec8",
+        "type": "function",
+        "z": "6b5bd3bf.04efec",
+        "name": "處理交易",
+        "func": "let action = msg.payload;\nlet quantity = parseInt(msg.topic) || 10;\n\nlet cash = flow.get('cash') || 0;\nlet shares = flow.get('shares') || 0;\nlet currentPrice = flow.get('currentPrice') || 0;\nlet initialInvestment = flow.get('initialInvestment') || 10000;\nlet bestProfit = flow.get('bestProfitPercent') || 0;\n\nlet toast = {};\nlet transactionSuccess = false;\n\nif (action === 'buy') {\n    let cost = currentPrice * quantity;\n    if (cash >= cost) {\n        cash -= cost;\n        shares += quantity;\n        toast.payload = `✅ 成功買入 ${quantity} 股 @ $${currentPrice.toFixed(2)}`;\n        toast.color = \"green\";\n        transactionSuccess = true;\n    } else {\n        toast.payload = `❌ 現金不足！需要 $${cost.toFixed(2)}，但只有 $${cash.toFixed(2)}`;\n        toast.color = \"red\";\n    }\n} \nelse if (action === 'sell') {\n    if (shares >= quantity) {\n        cash += currentPrice * quantity;\n        shares -= quantity;\n        toast.payload = `✅ 成功賣出 ${quantity} 股 @ $${currentPrice.toFixed(2)}`;\n        toast.color = \"green\";\n        transactionSuccess = true;\n    } else {\n        toast.payload = `❌ 持股不足！想賣出 ${quantity} 股，但只有 ${shares} 股`;\n        toast.color = \"red\";\n    }\n}\nelse if (action === 'buyAll') {\n    quantity = Math.floor(cash / currentPrice);\n    if (quantity > 0) {\n        let cost = currentPrice * quantity;\n        cash -= cost;\n        shares += quantity;\n        toast.payload = `✅ 全部買入! 購入 ${quantity} 股 @ $${currentPrice.toFixed(2)}`;\n        toast.color = \"green\";\n        transactionSuccess = true;\n    } else {\n        toast.payload = `❌ 現金不足！股價: $${currentPrice.toFixed(2)}`;\n        toast.color = \"red\";\n    }\n}\nelse if (action === 'sellAll') {\n    if (shares > 0) {\n        quantity = shares;\n        cash += currentPrice * shares;\n        shares = 0;\n        toast.payload = `✅ 全部賣出! 賣出 ${quantity} 股 @ $${currentPrice.toFixed(2)}`;\n        toast.color = \"green\";\n        transactionSuccess = true;\n    } else {\n        toast.payload = \"❌ 沒有持股可賣出！\";\n        toast.color = \"red\";\n    }\n}\n\nif (transactionSuccess) {\n    let portfolioValue = cash + shares * currentPrice;\n    let profitPercent = ((portfolioValue / initialInvestment) - 1) * 100;\n    \n    if (profitPercent > bestProfit) {\n        bestProfit = profitPercent;\n        flow.set('bestProfitPercent', bestProfit);\n    }\n    \n    flow.set('cash', cash);\n    flow.set('shares', shares);\n    flow.set('portfolioValue', portfolioValue);\n    flow.set('profitPercent', profitPercent);\n    \n    let profitColor = \"color:blue\";\n    if (profitPercent > 0) profitColor = \"color:green\";\n    if (profitPercent < 0) profitColor = \"color:red\";\n\n    let msg = {\n        payload: {\n            cash: cash.toFixed(2),\n            shares: shares,\n            portfolio: portfolioValue.toFixed(2),\n            profit: profitPercent.toFixed(2) + \"%\",\n            profitColor: profitColor,\n            bestProfit: bestProfit.toFixed(2) + \"%\"\n        }\n    };\n    \n    return [msg, toast];\n} else {\n    return [null, toast];\n}",
+        "outputs": 2,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 640,
+        "y": 560,
+        "wires": [
+            [
+                "ffba5c8f.21bb4",
+                "47a689df.60eb98",
+                "35af7c6.82b7a34",
+                "db7d65c5.33a0d8",
+                "b27c0a25.3df738"
+            ],
+            [
+                "a8ad5f59.1c5a2"
+            ]
+        ]
+    },
+    {
+        "id": "a8ad5f59.1c5a2",
+        "type": "ui_toast",
+        "z": "6b5bd3bf.04efec",
+        "position": "top right",
+        "displayTime": "3",
+        "highlight": "",
+        "outputs": 0,
+        "ok": "OK",
+        "cancel": "",
+        "raw": false,
+        "topic": "",
+        "name": "交易提示",
+        "x": 1020,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "cdb030e.ff5622",
+        "type": "ui_button",
+        "z": "6b5bd3bf.04efec",
+        "name": "",
+        "group": "25b7786a.b7fa98",
+        "order": 9,
+        "width": 5,
+        "height": 2,
+        "passthru": false,
+        "label": "全部買入",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "#009688",
+        "icon": "add_circle",
+        "payload": "buyAll",
+        "payloadType": "str",
+        "topic": "",
+        "x": 380,
+        "y": 580,
+        "wires": [
+            [
+                "8f17f6f2.71aec8"
+            ]
+        ]
+    },
+    {
+        "id": "2b3c8be3.765564",
+        "type": "ui_button",
+        "z": "6b5bd3bf.04efec",
+        "name": "",
+        "group": "25b7786a.b7fa98",
+        "order": 10,
+        "width": 5,
+        "height": 2,
+        "passthru": false,
+        "label": "全部賣出",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "#D32F2F",
+        "icon": "remove_circle",
+        "payload": "sellAll",
+        "payloadType": "str",
+        "topic": "",
+        "x": 380,
+        "y": 620,
+        "wires": [
+            [
+                "8f17f6f2.71aec8"
+            ]
+        ]
+    },
+    {
+        "id": "26f7bd1b.d31952",
+        "type": "function",
+        "z": "6b5bd3bf.04efec",
+        "name": "市場更新",
+        "func": "let currentPrice = flow.get('currentPrice') || 100;\nlet priceHistory = flow.get('priceHistory') || [];\nlet cash = flow.get('cash') || 10000;\nlet shares = flow.get('shares') || 0;\nlet initialInvestment = flow.get('initialInvestment') || 10000;\nlet bestProfit = flow.get('bestProfitPercent') || 0;\n\nconst volatility = 2;\nconst momentum = 0.2;\nconst meanReversion = 0.05;\nconst meanPrice = 100;\n\nlet changeDirection = (Math.random() - 0.5);\nlet lastChange = (priceHistory.length > 1) ? \n                 (priceHistory[priceHistory.length - 1].y - priceHistory[priceHistory.length - 2].y) : 0;\nchangeDirection = momentum * Math.sign(lastChange) + (1 - momentum) * changeDirection;\n\nlet priceChange = changeDirection * volatility;\npriceChange += (meanPrice - currentPrice) * meanReversion;\n\nlet nextPrice = currentPrice + priceChange;\nnextPrice = Math.max(1, Math.min(500, nextPrice));\n\nlet news = \"\";\nlet newsColor = \"white\";\nconst newsChance = 0.1;\nif (Math.random() < newsChance) {\n    let isGoodNews = Math.random() < 0.5;\n    let newsImpact = (Math.random() * 5 + 2) * (isGoodNews ? 1 : -1);\n    nextPrice += newsImpact;\n    nextPrice = Math.max(1, Math.min(500, nextPrice));\n    \n    if (isGoodNews) {\n        const goodNews = [\n            \"突破性技術發表，市場看好！\",\n            \"季度財報超出預期，股價上漲！\",\n            \"新投資者入市，資金流入增加！\"\n        ];\n        news = goodNews[Math.floor(Math.random() * goodNews.length)];\n        newsColor = \"#90EE90\";\n    } else {\n        const badNews = [\n            \"監管趨嚴，投資者擔憂！\",\n            \"川普調漲美國進口關稅，股價徹底下跌！\",\n            \"競爭壓力增大，前景不明！\"\n        ];\n        news = badNews[Math.floor(Math.random() * badNews.length)];\n        newsColor = \"#FFA07A\";\n    }\n} else {\n    const normalNews = [\n        \"市場平穩運行中\",\n        \"交易量維持正常水平\",\n        \"投資者等待更多市場信號\"\n    ];\n    news = normalNews[Math.floor(Math.random() * normalNews.length)];\n    newsColor = \"#E6E6FA\";\n}\n\nlet now = Date.now();\npriceHistory.push({x: now, y: nextPrice});\nif (priceHistory.length > 50) {\n    priceHistory.shift();\n}\n\nlet portfolioValue = cash + shares * nextPrice;\nlet profitPercent = ((portfolioValue / initialInvestment) - 1) * 100;\n\nlet profitColor = \"color:blue\";\nif (profitPercent > 0) profitColor = \"color:green\";\nif (profitPercent < 0) profitColor = \"color:red\";\n\nif (profitPercent > bestProfit) {\n    bestProfit = profitPercent;\n    flow.set('bestProfitPercent', bestProfit);\n}\n\nflow.set('currentPrice', nextPrice);\nflow.set('priceHistory', priceHistory);\nflow.set('portfolioValue', portfolioValue);\nflow.set('profitPercent', profitPercent);\n\nlet msg1 = {\n    payload: {\n        price: nextPrice.toFixed(2),\n        cash: cash.toFixed(2),\n        shares: shares,\n        portfolio: portfolioValue.toFixed(2),\n        profit: profitPercent.toFixed(2) + \"%\",\n        profitColor: profitColor,\n        bestProfit: bestProfit.toFixed(2) + \"%\",\n        news: news,\n        newsColor: newsColor\n    }\n};\n\nlet msg2 = {\n    payload: [{\n        series: [\"股價\"],\n        data: [priceHistory],\n        labels: [\"\"]\n    }]\n};\n\nreturn [msg1, msg2];",
+        "outputs": 2,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 580,
+        "y": 360,
+        "wires": [
+            [
+                "7bc261f3.3a4fb",
+                "65d82a23.2f2914",
+                "ffba5c8f.21bb4",
+                "47a689df.60eb98",
+                "35af7c6.82b7a34",
+                "db7d65c5.33a0d8",
+                "b27c0a25.3df738"
+            ],
+            [
+                "7d75d889.43ac78"
+            ]
+        ]
+    },
+    {
+        "id": "7d75d889.43ac78",
+        "type": "ui_chart",
+        "z": "6b5bd3bf.04efec",
+        "name": "股價走勢圖",
+        "group": "9c6532e9.8e11f",
+        "order": 1,
+        "width": 17,
+        "height": 8,
+        "label": "股價走勢",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "等待市場開盤...",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": "50",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "x": 1030,
+        "y": 100,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "25b7786a.b7fa98",
+        "type": "ui_group",
+        "z": "6b5bd3bf.04efec",
+        "name": "股市控制",
+        "tab": "ebc1b740.33ed18",
+        "order": 1,
+        "disp": true,
+        "width": 10,
+        "collapse": false
+    },
+    {
+        "id": "9c6532e9.8e11f",
+        "type": "ui_group",
+        "z": "6b5bd3bf.04efec",
+        "name": "股市資訊",
+        "tab": "ebc1b740.33ed18",
+        "order": 2,
+        "disp": true,
+        "width": 17,
+        "collapse": false
+    },
+    {
+        "id": "ebc1b740.33ed18",
+        "type": "ui_tab",
+        "z": "6b5bd3bf.04efec",
+        "name": "股市模擬",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    }
+]
